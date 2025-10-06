@@ -12,27 +12,17 @@ const transactionsRoutes = require('./routes/transactions');
 
 const app = express();
 
+// CORS configuration - VERSION SIMPLIFIÉE
 // --------------------
-// CORS configuration
-// --------------------
-// Tu peux ajouter plusieurs URLs de frontends autorisés ici
-const allowedOrigins = [
-  'https://digimonnaie.netlify.app', // ton site actuel
-  'https://digimonnaie-backend-1.onrender.com' // ton backend
-];
-
 app.use(cors({
-  origin: function(origin, callback){
-    // autoriser les requêtes sans origine (postman, curl)
-    if(!origin) return callback(null, true);
-    if(allowedOrigins.indexOf(origin) === -1){
-      const msg = `CORS policy: ${origin} non autorisé`;
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
+  origin: [
+    'https://digimonnaie.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ],
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // JSON parser
