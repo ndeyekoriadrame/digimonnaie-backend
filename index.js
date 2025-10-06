@@ -12,7 +12,8 @@ const transactionsRoutes = require('./routes/transactions');
 
 const app = express();
 
-// CORS configuration - VERSION SIMPLIFIÉE
+// --------------------
+// CORS configuration
 // --------------------
 app.use(cors({
   origin: [
@@ -25,8 +26,17 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// JSON parser
+// --------------------
+// Middlewares de base
+// --------------------
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Log de toutes les requêtes (AVANT les routes)
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.path}`);
+  next();
+});
 
 // --------------------
 // Connexion à MongoDB
@@ -34,21 +44,19 @@ app.use(express.json());
 connectDB(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connecté');
-    // Création admin par défaut
     createAdmin();
   })
   .catch(err => console.error('❌ Erreur MongoDB:', err.message));
 
 // --------------------
-// Routes API
+// Route de santé (health check)
 // --------------------
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/transactions', transactionsRoutes);
-
-// Gestion des routes API non trouvées
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: 'Route API non trouvée' });
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'API fonctionne correctement',
+    timestamp: new Date()
+  });
 });
 
 // --------------------
@@ -57,22 +65,43 @@ app.use('/api', (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --------------------
+// Routes API
+// --------------------
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/transactions', transactionsRoutes);
+
+console.log('✅ Routes API montées');
+
+// --------------------
 // React frontend (si tu veux le servir depuis Express)
 // --------------------
-// Vérifie que ce dossier existe sur Render avant de déployer
 const frontendPath = path.join(__dirname, 'frontend', 'dist');
 if (require('fs').existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
-  // Fallback pour React Router
+  
+  // Fallback pour React Router (DOIT être en dernier)
   app.get('*', (req, res) => {
+    // Ne pas capturer les routes API
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ message: 'Route API non trouvée' });
+    }
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
 } else {
-  console.warn('⚠️ Dossier frontend/dist introuvable. Servir le frontend depuis Netlify.');
+  console.warn('⚠️ Dossier frontend/dist introuvable. Frontend servi depuis Netlify.');
+  
+  // Gestion 404 pour les routes API seulement
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({ message: 'Route API non trouvée' });
+  });
 }
 
 // --------------------
 // Démarrage du serveur
 // --------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur lancé sur le port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
+  console.log(`📡 API disponible sur http://localhost:${PORT}/api`);
+});
