@@ -32,7 +32,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Log de toutes les requêtes (AVANT les routes)
+// Log de toutes les requêtes
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path}`);
   next();
@@ -74,27 +74,28 @@ app.use('/api/transactions', transactionsRoutes);
 console.log('✅ Routes API montées');
 
 // --------------------
+// Gestion 404 pour les routes API non trouvées
+// --------------------
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ 
+    message: 'Route API non trouvée',
+    path: req.path 
+  });
+});
+
+// --------------------
 // React frontend (si tu veux le servir depuis Express)
 // --------------------
 const frontendPath = path.join(__dirname, 'frontend', 'dist');
 if (require('fs').existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
   
-  // Fallback pour React Router (DOIT être en dernier)
+  // Fallback pour React Router
   app.get('*', (req, res) => {
-    // Ne pas capturer les routes API
-    if (req.path.startsWith('/api')) {
-      return res.status(404).json({ message: 'Route API non trouvée' });
-    }
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
 } else {
   console.warn('⚠️ Dossier frontend/dist introuvable. Frontend servi depuis Netlify.');
-  
-  // Gestion 404 pour les routes API seulement
-  app.use('/api/*', (req, res) => {
-    res.status(404).json({ message: 'Route API non trouvée' });
-  });
 }
 
 // --------------------
