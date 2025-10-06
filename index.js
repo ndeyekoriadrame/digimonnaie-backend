@@ -12,54 +12,55 @@ const transactionsRoutes = require('./routes/transactions');
 
 const app = express();
 
-// Liste des frontends autorisés
+// --- CORS dynamique pour plusieurs frontends ---
 const allowedOrigins = [
-  'https://digimonnaie.netlify.app' // ajoute ici tous tes frontends
+  'https://digimonnaie.netlify.app',
+  'https://spectacular-tulumba-b212d2.netlify.app',
+  'https://fantastic-tanuki-8eae4e.netlify.app'
 ];
 
-// Middlewares
 app.use(cors({
-  origin: function (origin, callback) {
-    // autorise les requêtes sans origin (Postman, curl) ou si l'origine est dans la liste
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+  origin: function(origin, callback) {
+    // Autorise les requêtes sans origin (ex: Postman) ou celles dans allowedOrigins
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('CORS not allowed for this origin'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 
+// --- Middlewares ---
 app.use(express.json());
 
-// Connexion à MongoDB
-connectDB(process.env.MONGO_URI);
+// --- Connexion à MongoDB ---
+(async () => {
+  try {
+    await connectDB(process.env.MONGO_URI);
+    console.log('✅ MongoDB connecté');
+    await createAdmin(); // Création de l’admin par défaut
+  } catch (err) {
+    console.error('❌ Erreur MongoDB ou création admin :', err.message);
+  }
+})();
 
-// Création admin par défaut
-createAdmin();
-
-// Routes API
+// --- Routes API ---
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionsRoutes);
 
-// Dossier statique pour les images
+// --- Dossier statique pour les images / uploads ---
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Frontend React build
-const frontendPath = path.join(__dirname, 'frontend', 'dist');
-app.use(express.static(frontendPath));
-
-// Middleware fallback pour React Router
-app.use((req, res, next) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(frontendPath, 'index.html'));
-  } else {
-    next();
-  }
+// --- Page 404 pour API ---
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ message: 'Route API non trouvée' });
 });
 
-// Démarrage du serveur
+// --- Démarrage du serveur ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur lancé sur le port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
+});
