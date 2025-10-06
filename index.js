@@ -27,15 +27,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionsRoutes);
 
-// Dossier statique (pour les images, par ex.)
+// Dossier statique pour les images, par ex.
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Si tu veux servir ton frontend (React buildé) depuis le backend :
-const __dirname1 = path.join();
-app.use(express.static(path.join(__dirname1, '/frontend/dist')));
+// ✅ Servir le frontend React buildé
+const frontendPath = path.join(__dirname, 'frontend', 'dist');
+app.use(express.static(frontendPath));
 
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname1, 'frontend', 'dist', 'index.html'));
+// Catch-all route compatible path-to-regexp pour React Router
+app.get('/:wildcard(*)', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Démarrage du serveur
