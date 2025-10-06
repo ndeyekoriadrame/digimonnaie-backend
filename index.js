@@ -9,7 +9,7 @@ const createAdmin = require('./InitAdmin');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const transactionsRoutes = require('./routes/transactions');
-const routes = require("./src/routes"); // ou "./app/routes" selon ton arborescence
+
 
 
 const app = express();
@@ -78,7 +78,7 @@ console.log('✅ Routes API montées');
 // --------------------
 // Gestion 404 pour les routes API non trouvées
 // --------------------
-app.use("/api", routes);
+
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
