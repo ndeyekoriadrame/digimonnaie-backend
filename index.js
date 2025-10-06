@@ -11,7 +11,7 @@ const userRoutes = require('./routes/users');
 const transactionsRoutes = require('./routes/transactions');
 
 const app = express();
-
+app.use('/api',authRoutes);
 // --------------------
 // CORS configuration (TOUT EN HAUT)
 // --------------------
@@ -76,10 +76,7 @@ console.log('✅ Routes API montées');
 // --------------------
 // Gestion 404 pour les routes API non trouvées
 // --------------------
-// 404 pour toutes les routes API non trouvées
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: 'Route API not found' });
-});
+
 
 
 // --------------------
@@ -104,4 +101,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Serveur lancé sur le port ${PORT}`);
   console.log(`📡 API disponible sur http://localhost:${PORT}/api`);
+});
+
+// 404 pour toutes les routes API non trouvées
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'Route API not found' });
 });
