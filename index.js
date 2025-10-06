@@ -13,7 +13,11 @@ const transactionsRoutes = require('./routes/transactions');
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: 'https://spectacular-tulumba-b212d2.netlify.app', // ton frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true // si tu envoies des cookies/auth
+}));
 app.use(express.json());
 
 // Connexion à MongoDB
