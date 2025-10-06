@@ -17,8 +17,8 @@ const app = express();
 // --------------------
 // Tu peux ajouter plusieurs URLs de frontends autorisés ici
 const allowedOrigins = [
-  'https://digimonnaie.netlify.app',
-  'https://spectacular-tulumba-b212d2.netlify.app'
+  'https://digimonnaie.netlify.app', // ton site actuel
+  'https://digimonnaie-backend-1.onrender.com' // ton backend
 ];
 
 app.use(cors({
