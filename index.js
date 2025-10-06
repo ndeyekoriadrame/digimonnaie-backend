@@ -14,7 +14,7 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: 'https://spectacular-tulumba-b212d2.netlify.app', // ton frontend
+  origin: 'https://fantastic-tanuki-8eae4e.netlify.app/login', // ton frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true // si tu envoies des cookies/auth
 }));
