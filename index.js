@@ -5,7 +5,7 @@ const path = require('path');
 const connectDB = require('./config/db');
 const createAdmin = require('./InitAdmin');
 
-// Importation des routes
+// Routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const transactionsRoutes = require('./routes/transactions');
@@ -16,10 +16,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connexion à MongoDB Atlas
+// Connexion à MongoDB
 connectDB(process.env.MONGO_URI);
 
-// Création de l’administrateur par défaut (si inexistant)
+// Création admin par défaut
 createAdmin();
 
 // Routes API
@@ -27,16 +27,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionsRoutes);
 
-// Dossier statique pour les images, par ex.
+// Dossier statique pour les images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Servir le frontend React buildé
+// Frontend React build
 const frontendPath = path.join(__dirname, 'frontend', 'dist');
 app.use(express.static(frontendPath));
 
-// Catch-all route compatible path-to-regexp pour React Router
-app.get('/:wildcard(*)', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+// Middleware fallback pour React Router
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  } else {
+    next();
+  }
 });
 
 // Démarrage du serveur
