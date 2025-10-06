@@ -12,55 +12,77 @@ const transactionsRoutes = require('./routes/transactions');
 
 const app = express();
 
-// --- CORS dynamique pour plusieurs frontends ---
+// --------------------
+// CORS configuration
+// --------------------
+// Tu peux ajouter plusieurs URLs de frontends autorisés ici
 const allowedOrigins = [
   'https://digimonnaie.netlify.app',
-  'https://spectacular-tulumba-b212d2.netlify.app',
-  'https://fantastic-tanuki-8eae4e.netlify.app'
+  'https://spectacular-tulumba-b212d2.netlify.app'
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // Autorise les requêtes sans origin (ex: Postman) ou celles dans allowedOrigins
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS not allowed for this origin'));
+  origin: function(origin, callback){
+    // autoriser les requêtes sans origine (postman, curl)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = `CORS policy: ${origin} non autorisé`;
+      return callback(new Error(msg), false);
     }
+    return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   credentials: true
 }));
 
-// --- Middlewares ---
+// JSON parser
 app.use(express.json());
 
-// --- Connexion à MongoDB ---
-(async () => {
-  try {
-    await connectDB(process.env.MONGO_URI);
+// --------------------
+// Connexion à MongoDB
+// --------------------
+connectDB(process.env.MONGO_URI)
+  .then(() => {
     console.log('✅ MongoDB connecté');
-    await createAdmin(); // Création de l’admin par défaut
-  } catch (err) {
-    console.error('❌ Erreur MongoDB ou création admin :', err.message);
-  }
-})();
+    // Création admin par défaut
+    createAdmin();
+  })
+  .catch(err => console.error('❌ Erreur MongoDB:', err.message));
 
-// --- Routes API ---
+// --------------------
+// Routes API
+// --------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/transactions', transactionsRoutes);
 
-// --- Dossier statique pour les images / uploads ---
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// --- Page 404 pour API ---
-app.use('/api/*', (req, res) => {
+// Gestion des routes API non trouvées
+app.use('/api', (req, res) => {
   res.status(404).json({ message: 'Route API non trouvée' });
 });
 
-// --- Démarrage du serveur ---
+// --------------------
+// Dossier statique pour les images
+// --------------------
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// --------------------
+// React frontend (si tu veux le servir depuis Express)
+// --------------------
+// Vérifie que ce dossier existe sur Render avant de déployer
+const frontendPath = path.join(__dirname, 'frontend', 'dist');
+if (require('fs').existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+  // Fallback pour React Router
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+} else {
+  console.warn('⚠️ Dossier frontend/dist introuvable. Servir le frontend depuis Netlify.');
+}
+
+// --------------------
+// Démarrage du serveur
+// --------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Serveur lancé sur le port ${PORT}`));
