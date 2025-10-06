@@ -12,12 +12,25 @@ const transactionsRoutes = require('./routes/transactions');
 
 const app = express();
 
+// Liste des frontends autorisés
+const allowedOrigins = [
+  'https://digimonnaie.netlify.app' // ajoute ici tous tes frontends
+];
+
 // Middlewares
 app.use(cors({
-  origin: 'https://fantastic-tanuki-8eae4e.netlify.app/login', // ton frontend
+  origin: function (origin, callback) {
+    // autorise les requêtes sans origin (Postman, curl) ou si l'origine est dans la liste
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true // si tu envoies des cookies/auth
+  credentials: true
 }));
+
 app.use(express.json());
 
 // Connexion à MongoDB
