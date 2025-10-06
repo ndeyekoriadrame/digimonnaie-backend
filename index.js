@@ -31,11 +31,11 @@ app.use('/api/transactions', transactionsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ Si tu veux servir ton frontend (React buildé) depuis le backend :
-const __dirname1 = path.resolve();
+const __dirname1 = path.join();
 app.use(express.static(path.join(__dirname1, '/frontend/dist')));
 
 app.get('/*', (req, res) => {
-  res.sendFile(path.resolve(__dirname1, 'frontend', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname1, 'frontend', 'dist', 'index.html'));
 });
 
 // Démarrage du serveur
