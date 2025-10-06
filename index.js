@@ -76,12 +76,11 @@ console.log('✅ Routes API montées');
 // --------------------
 // Gestion 404 pour les routes API non trouvées
 // --------------------
-app.all('/api/*', (req, res) => {
-  res.status(404).json({ 
-    message: 'Route API non trouvée',
-    path: req.path 
-  });
+app.use("/api", routes);
+app.all("*", (req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
+
 
 // --------------------
 // React frontend (si tu veux le servir depuis Express)
