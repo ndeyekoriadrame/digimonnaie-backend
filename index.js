@@ -79,9 +79,10 @@ console.log('✅ Routes API montées');
 // Gestion 404 pour les routes API non trouvées
 // --------------------
 
-app.all("*", (req, res) => {
+app.all("/api/*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+
 
 
 // --------------------
