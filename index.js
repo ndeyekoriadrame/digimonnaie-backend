@@ -10,12 +10,10 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const transactionsRoutes = require('./routes/transactions');
 
-
-
 const app = express();
 
 // --------------------
-// CORS configuration
+// CORS configuration (TOUT EN HAUT)
 // --------------------
 app.use(cors({
   origin: [
@@ -78,12 +76,9 @@ console.log('✅ Routes API montées');
 // --------------------
 // Gestion 404 pour les routes API non trouvées
 // --------------------
-app.use("/api", (req, res) => {
+app.use('/api/*', (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
-
-
-
 
 // --------------------
 // React frontend (si tu veux le servir depuis Express)
