@@ -9,7 +9,8 @@ const createAdmin = require('./InitAdmin');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const transactionsRoutes = require('./routes/transactions');
-const routes = require("./routes");
+const routes = require("./src/routes"); // ou "./app/routes" selon ton arborescence
+
 
 const app = express();
 
